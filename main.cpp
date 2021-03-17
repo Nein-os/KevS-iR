@@ -145,32 +145,16 @@ void gather_new_data(bool *bKeepAlive, bool *bShowFuel) {
 	char answer[10];
 	float laptime, fuel;
 
-	// reset
-	/// kann auch als Initialisierung benutzt werden
-	/// reset() wird nicht benutzt, da das fuel_target nicht resetet werden muss
-	for (int i = 0; i < AMOUNT_DATA; i++)
-		stuff[i] = .0f;
-	last_stand = 0.0f;
-	last_session = 0;
-	current_lap= -1;
-	ignore_current_lap = true;
-	fr->reset();
-	lc->reset();
-
+	// reset kann auch als Initialisierung benutzt werden
+	reset();
 	f->setNewData(stuff);
 
 	while (*bKeepAlive) {
-		/* TODOs for Main-Logic-Thread
-		 *
-		 * Resets:
-		 *  - Reset von Durchschnitt und Fuel-Save
-		 *	- Falls Fuel-Save eintritt zum ersten mal, seit Beginn
-		 *	- Falls Fuel-Save aufhört zum ersten mal, seit Beginn
-		*/
-
 		ir = &irsdk_client::instance();
 		if (ir->isConnected()) {
-			// std::cout << "Is Connected\n" << std::endl;
+#ifdef QT_DEBUG
+			 std::cout << "Is Connected\n" << std::endl;
+#endif
 			if (ir->waitForData(500)) {
 				if (*bShowFuel) {
 					f->refresh_tank(ir_info::g_FuelLevel.getFloat());
@@ -307,8 +291,6 @@ void reset()
 		stuff[i] = .0f;
 	last_stand = 0.0f;
 	last_session = 0;
-	update_fuel_target_1(0.0f, f);
-	update_fuel_target_2(0.0f, f);
 	current_lap= -1;
 	ignore_current_lap = true;
 	fr->reset();

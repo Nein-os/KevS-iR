@@ -76,7 +76,7 @@ OptionWindow::OptionWindow(QWidget *parent)
 
 	lbl_target = new QLabel("Target 1:", parent);
 	fuel_layout->addWidget(lbl_target, 1, 0);
-	fuel_layout->addWidget(new QLabel("(0 zum Deaktivieren)", parent), 1, 2);
+	fuel_layout->addWidget(new QLabel("(0 to deactivate)", parent), 1, 2);
 
 	dsb_target_1 = new QDoubleSpinBox(parent);
 	dsb_target_1->setMaximum(22);
@@ -88,7 +88,7 @@ OptionWindow::OptionWindow(QWidget *parent)
 	dsb_target_2->setMaximum(22);
 	dsb_target_2->setMinimum(0);
 	fuel_layout->addWidget(dsb_target_2, 2, 1);
-	fuel_layout->addWidget(new QLabel("(Aktiv nur wenn T1 != 0)", parent), 2, 2);
+	fuel_layout->addWidget(new QLabel("(Activ only T1 not 0)", parent), 2, 2);
 
 	/*cb_refuel = new QComboBox(parent);
 	cb_refuel->addItems(refuel_options);
@@ -117,13 +117,13 @@ OptionWindow::OptionWindow(QWidget *parent)
 	////////////////////////////////////////
 
 	// Additional
-	gb_additional = new QGroupBox("Verwaltung", parent);
+	gb_additional = new QGroupBox("Organisation", parent);
 	gb_additional->setLayout(additional_layout);
 	base_layout->addWidget(gb_additional, 2, 0);
 
 	btn_reset = new QPushButton("Reset", parent);
-	btn_save = new QPushButton("Settings speichern", parent);
-	btn_load = new QPushButton("Settings laden", parent);
+	btn_save = new QPushButton("Save Settings", parent);
+	btn_load = new QPushButton("Load Settings", parent);
 
 	additional_layout->addWidget(btn_reset, 0, 0);
 	additional_layout->addWidget(btn_save, 0, 1);
@@ -347,8 +347,8 @@ void OptionWindow::exec_adjust_fuel()
 {
 	if (fw->isHidden()) {
 		QMessageBox *mb = new QMessageBox(this);
-		mb->setWindowTitle("Achtung");
-		mb->setText("Aktiviere zunächst das Fuel-Window");
+		mb->setWindowTitle("Warning");
+		mb->setText("Activate first Fuel-Window");
 		mb->setIcon(QMessageBox::Warning);
 		mb->setDefaultButton(QMessageBox::Ok);
 		mb->show();
@@ -375,8 +375,8 @@ void OptionWindow::exec_edit_fuel()
 			edit_fuel_widget->show();
 	} else {
 		QMessageBox *mb = new QMessageBox(this);
-		mb->setWindowTitle("Achtung");
-		mb->setText("Aktiviere zunächst das Fuel-Window");
+		mb->setWindowTitle("Warning");
+		mb->setText("Activate first Fuel-Window");
 		mb->setIcon(QMessageBox::Warning);
 		mb->setDefaultButton(QMessageBox::Ok);
 		mb->show();
@@ -401,8 +401,8 @@ void OptionWindow::exec_start_fuel()
 		bShowFuel = true;
 	} else if (edit_fuel_widget->isVisible()) {
 		QMessageBox *mb = new QMessageBox(this);
-		mb->setWindowTitle("Achtung");
-		mb->setText("Schließe zunächst das Color-Edit Fenster");
+		mb->setWindowTitle("Warning");
+		mb->setText("Close first Fule-Edit window");
 		mb->setIcon(QMessageBox::Warning);
 		mb->setDefaultButton(QMessageBox::Ok);
 		mb->show();
