@@ -2,6 +2,9 @@
 Mainly a fuel-calculator for the simracing software iRacing.com with Qt-Framework.
 A nice and clean tool to help racing.
 Still in developement. New features will be a more enhance Fuelcalculator and new windows like a Relative and/or Standings.
+## Links
+* [Official iRacing-SDK](https://members.iracing.com/jforum/posts/list/1470675.page)
+* [Official website of Qt](https://www.qt.io/)
 
 # Installing
 You can download the .zip-Folder and just extract it somewhere on your computer. Important is to keep all files in the same folder.
