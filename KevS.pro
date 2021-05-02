@@ -13,7 +13,6 @@ include(QtAwesome/QtAwesome.pri)
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    calculators/additionalinformationcalculator.cpp \
     calculators/fuelcalculator.cpp \
     calculators/fuelrecorder.cpp \
     calculators/lapcalculator.cpp \
@@ -32,7 +31,6 @@ SOURCES += \
     calculators/statrecorder.cpp
 
 HEADERS += \
-    calculators/additionalinformationcalculator.h \
     calculators/fuelcalculator.h \
     calculators/fuelrecorder.h \
     calculators/lapcalculator.h \
