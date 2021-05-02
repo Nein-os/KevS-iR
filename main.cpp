@@ -20,6 +20,7 @@
 #include "ui/optionwindow.h"
 #include "ui/fuelwindow.h"
 #include "ui/debugwindow.h"
+#include "ui/additionalinformationwindow.h"
 #include "irsdk/irsdk_client.h"
 #include "irsdk/lap_timing.h"
 #include "calculators/fuelrecorder.h"
@@ -37,10 +38,11 @@
 #include <string>
 
 #ifdef QT_DEBUG
-void gather_new_data(bool *bKeepAlive, bool *bShowFuel, DebugWindow *dw);
+void gather_new_data(bool *bShowFuel, bool *bShowAIW, DebugWindow *dw);
 #else
-void gather_new_data(bool *bKeepAlive, bool *bShowFuel);
+void gather_new_data(bool *bShowFuel, bool *bShowAIW);
 #endif
+void gather_immediat_data(bool *bShowFuel, bool *bShowAIW);
 void get_lap_timing(OptionWindow*);
 float get_verbrauch(float);
 
@@ -55,19 +57,23 @@ StatRecorder *fr = new FuelRecorder();
 LapCalculator *lc = new LapCalculator();
 FuelCalculator *fc = new FuelCalculator((FuelRecorder*)fr, lc);
 FuelWindow *f;
+AdditionalInformationWindow *aiw;
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	OptionWindow w;
 	FWSettings fws;
+	AIWSettings aiws;
 #ifdef QT_DEBUG
 		DebugWindow *dw;
 		 dw = new DebugWindow();
+		 w.set_debug_window(dw);
 		dw->show();
 #endif
 
 		f = w.get_fuel_ref();
+		aiw = w.get_aiw_ref();
 	{
 		using namespace std;
 		vector<string> stuff;
@@ -77,11 +83,11 @@ int main(int argc, char *argv[])
 		if (settings.good()) { // Check falls existiert
 			getline(settings, fuel_settings, '\n');
 			settings.close();
-			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0) {
-				if (!load_settings(&fws))
+			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0 || strcmp(fuel_settings.c_str(), "v0.2.4")) {
+				if (!load_settings(&fws, &aiws))
 					switch(show_file_error(MainError::Error_while_parsing, &w)) {
 						case QMessageBox::Ok:
-							set_default_settings(&fws);
+							set_default_settings(&fws, &aiws);
 							break;
 						default:
 							return 0;
@@ -89,7 +95,7 @@ int main(int argc, char *argv[])
 			} else {
 				switch(show_file_error(MainError::Not_compatible, &w)) {
 					case QMessageBox::Ok:
-						set_default_settings(&fws);
+						set_default_settings(&fws, &aiws);
 						break;
 					default:
 						return 0;
@@ -98,7 +104,7 @@ int main(int argc, char *argv[])
 		} else {
 			switch(show_file_error(MainError::Wrong_Settings_File, &w)) {
 				case QMessageBox::Ok:
-					set_default_settings(&fws);
+					set_default_settings(&fws, &aiws);
 					break;
 				default:
 					return 0;
@@ -107,13 +113,15 @@ int main(int argc, char *argv[])
 	}
 	w.set_versions(VERSION_TOOL, VERSION_FUELCALC, VERSION_RELATIVE);
 	w.set_fuel_window_settings(fws);
+	w.set_aiw_window_settings(aiws);
 
-    bool bKeepAlive = true, *bShowFuel = w.get_fuel_state();
+    bool *bShowFuel = w.get_fuel_state(), *bShowAIW = w.get_aiw_state();
 #ifdef QT_DEBUG
-    std::thread t_newData(gather_new_data, &bKeepAlive, bShowFuel, dw);
+    std::thread t_newData(gather_new_data, bShowFuel, bShowAIW, dw);
 #else
-    std::thread t_newData(gather_new_data, &bKeepAlive, bShowFuel);
+    std::thread t_newData(gather_new_data, bShowFuel, bShowAIW);
 #endif
+    std::thread t_immediatData(gather_immediat_data, bShowFuel, bShowAIW);
     std::thread t_lapTiming(get_lap_timing, &w);
 
     w.show();
@@ -137,27 +145,26 @@ void get_lap_timing(OptionWindow *w)
 }
 
 #ifdef QT_DEBUG
-void gather_new_data(bool *bKeepAlive, bool *bShowFuel, DebugWindow *dw) {
+void gather_new_data(bool *bShowFuel, bool *bShowAIW, DebugWindow *dw) {
 #else
-void gather_new_data(bool *bKeepAlive, bool *bShowFuel) {
+void gather_new_data(bool *bShowFuel, bool *bShowAIW) {
 #endif
 	irsdk_client* ir;
 	char answer[10];
 	float laptime, fuel;
-
+	float aiw_data[ValueTypes::AMNT_VALUE_TYPES - 2];
+	ir = &irsdk_client::instance();
 	// reset kann auch als Initialisierung benutzt werden
 	reset();
 	f->setNewData(stuff);
 
-	while (*bKeepAlive) {
-		ir = &irsdk_client::instance();
-		if (ir->isConnected()) {
+reconnect_data:
+	if (ir->isConnected()) {
 #ifdef QT_DEBUG
 			 std::cout << "Is Connected\n" << std::endl;
 #endif
-			if (ir->waitForData(500)) {
+			while (ir->waitForData(500)) {
 				if (*bShowFuel) {
-					f->refresh_tank(ir_info::g_FuelLevel.getFloat());
 					if (ir_info::g_Lap.getInt() > current_lap) {
 						current_lap = ir_info::g_Lap.getInt();
 						if (ir->getSessionStrVal("WeekendInfo:SessionID:", answer, 10)) {
@@ -236,12 +243,37 @@ void gather_new_data(bool *bKeepAlive, bool *bShowFuel) {
 #ifdef QT_DEBUG
 				dw->setNewData(ir_info::g_Lap.getInt(), ir_info::g_LastLapTime.getFloat(), ir_info::g_FuelLevel.getFloat(), ignore_current_lap);
 #endif
+				if (*bShowAIW) {
+					aiw_data[ValueTypes::AirTemp] = ir_info::g_AirTemp.getFloat();
+					aiw_data[ValueTypes::WindDir] = ir_info::g_WindDir.getFloat();
+					aiw_data[ValueTypes::WindSpeed] = ir_info::g_WindVel.getFloat();
+					aiw_data[ValueTypes::Humidity] = ir_info::g_AirDensity.getFloat();
+					aiw_data[ValueTypes::OilTemp] = ir_info::g_PlayerOilTemp.getInt();
+					aiw_data[ValueTypes::WaterTemp] = ir_info::g_PlayerWaterTemp.getInt();
+					aiw_data[ValueTypes::TrackTemp] = ir_info::g_TrackTempCrew.getFloat();
+					aiw->setNewData(aiw_data);
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}
 		} else {
 			// std::cout << "Not\n" << std::endl;
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+		goto reconnect_data;
+}
+
+void gather_immediat_data(bool *bShowFuel, bool *bShowAIW) {
+	irsdk_client *ir;
+	ir = &irsdk_client::instance();
+reconnect_immediat_data:
+	if (ir->isConnected()) {
+		while (*bShowFuel || *bShowAIW) {
+			f->refresh_tank(ir_info::g_FuelLevel.getFloat());
+			aiw->setHybrid(ir_info::g_BatteryState.getFloat() * 100, ir_info::g_BatteryUsed.getFloat() * 100);
+		}
 	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+	goto reconnect_immediat_data;
 }
 
 float get_verbrauch(float stand)
@@ -354,14 +386,15 @@ int show_file_error(MainError e, QWidget *w)
 }
 */
 
-bool load_settings(FWSettings *fws, const QString fileName)
+bool load_settings(FWSettings *fws, AIWSettings *aiws, const QString fileName)
 {
 	std::ifstream settings;
 	settings.open((fileName.isEmpty()) ? "latest_settings.ksf" : fileName.toStdString());
-	std::string fuel_settings;
+	std::string fuel_settings, version_number;
 	std::vector<std::string> to_load;
 	if (settings.good()) { // Check falls existiert
 		getline(settings, fuel_settings, '\n');
+		version_number = fuel_settings;
 		getline(settings, fuel_settings, '\n');
 		{
 			using namespace std;
@@ -404,6 +437,32 @@ bool load_settings(FWSettings *fws, const QString fileName)
 			     << to_load[AMOUNT_ROW*6+2] << "," << to_load[AMOUNT_ROW*6+3] << ","
 			     << to_load[AMOUNT_ROW*6+4] << "," << to_load[AMOUNT_ROW*6+5] << endl << endl;
 #endif
+			if (strcmp(version_number.c_str(), "v0.3.0") == 0) {
+				getline(settings,fuel_settings,'\n');
+				to_load = explode(fuel_settings, ',');
+				aiws->pos_x = stoi(to_load[0]);
+				aiws->pos_y = stoi(to_load[1]);
+				aiws->width = stoi(to_load[2]);
+				aiws->height = stoi(to_load[3]);
+				aiws->bActivateInformation = stoi(to_load[4]);
+				aiws->background = QColor(stoi(to_load[5]), stoi(to_load[6]), stoi(to_load[7]), stoi(to_load[8]));
+				for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++)
+					aiws->row_visible[i] = stoi(to_load[i+9]);
+				getline(settings,fuel_settings,'\n');
+				to_load = explode(fuel_settings, ',');
+				for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++)
+					aiws->row_color[i] = QColor(stoi(to_load[3*i]), stoi(to_load[3*i+1]), stoi(to_load[3*i+2]));
+				getline(settings,fuel_settings,'\n');
+				to_load = explode(fuel_settings, ',');
+				for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++) {
+					aiws->row_font[i] = QFont(to_load[i*6].c_str(), stoi(to_load[i*6+1]),
+								stoi(to_load[i*6+2]), stoi(to_load[i*6+3]));
+					aiws->row_font[i].setUnderline(stoi(to_load[i*6+4]));
+					aiws->row_font[i].setStrikeOut(stoi(to_load[i*6+5]));
+				}
+			} else {
+				set_default_settings(aiws);
+			}
 			settings.close();
 		}
 		return true;
@@ -411,7 +470,7 @@ bool load_settings(FWSettings *fws, const QString fileName)
 		settings.close();
 	return false;
 }
-void set_default_settings(FWSettings *fws)
+void set_default_settings(FWSettings *fws, AIWSettings *aiws)
 {
 	fws->pos_x = 500;
 	fws->pos_y = 500;
@@ -436,4 +495,20 @@ void set_default_settings(FWSettings *fws)
 	fws->delta[0] = QColor(0,255,0);
 	fws->delta[1] = QColor(0,0,0);
 	fws->delta[2] = QColor(255,0,0);
+
+	set_default_settings(aiws);
+}
+
+void set_default_settings(AIWSettings *aiws)
+{
+	aiws->pos_x = 1000;
+	aiws->pos_y = 1000;
+	aiws->bActivateInformation = true;
+	aiws->width = 250;
+	aiws->height = 500;
+	aiws->background = QColor(255,255,255,135);
+	for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++) {
+		aiws->row_font[i] = QFont("Arial", 28);
+		aiws->row_color[i] = QColor(0,0,0);
+	}
 }

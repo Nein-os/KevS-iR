@@ -43,24 +43,25 @@ FuelEditWindow::FuelEditWindow(QWidget *parent) : QWidget(parent)
 	btn_cancel = new QPushButton("Cancel", parent);
 	base_layout->addWidget(btn_cancel, AMOUNT_DIF_COLORS+2, 2);
 
-	QLabel *lbl_alpha = new QLabel("BG Alpha:", parent);
-	base_layout->addWidget(lbl_alpha, 0, 0);
+	lbl_color[0] = new QLabel("Background:", parent);
+	btn_color[0] = new QPushButton("Color", parent);
+	base_layout->addWidget(lbl_color[0], 0, 0);
 	alpha = new QSpinBox();
 	alpha->setMaximum(255);
 	alpha->setMinimum(0);
-	base_layout->addWidget(alpha, 0, 1);
+	base_layout->addWidget(btn_color[0], 0, 1);
+	base_layout->addWidget(alpha, 0, 2);
 
-	for (int i = 0; i < AMOUNT_DIF_COLORS; i++) {
+	for (int i = 1; i < AMOUNT_DIF_COLORS; i++) {
 		lbl_color[i] = new QLabel(parent);
 		btn_color[i] = new QPushButton("Color", parent);
 		if (i) {
 			btn_font[i-1] = new QPushButton("Font", parent);
-			base_layout->addWidget(btn_font[i-1], i+1, 2);
+			base_layout->addWidget(btn_font[i-1], i, 2);
 		}
-		base_layout->addWidget(lbl_color[i], i+1, 0);
-		base_layout->addWidget(btn_color[i], i+1, 1);
+		base_layout->addWidget(lbl_color[i], i, 0);
+		base_layout->addWidget(btn_color[i], i, 1);
 	}
-	lbl_color[0]->setText("Background:");
 	lbl_color[1]->setText("Top Header:");
 	lbl_color[2]->setText("AVG Row:");
 	lbl_color[3]->setText("Target 1 Row:");
@@ -166,7 +167,19 @@ void FuelEditWindow::edit_font_row_tank(){
 }
 
 // Rest
-void FuelEditWindow::cancel() { hide(); }
+void FuelEditWindow::cancel() {
+	// Reset
+	for (int i = 0; i < AMOUNT_ROW; i++)
+		font_values[i] = fw->get_row_font(i);
+	font_header = fw->get_header_font();
+
+	for (int i = 0; i < AMOUNT_DIF_COLORS; i++)
+		color_values[i] = fw->get_row_color(i);
+	for (int i = 0; i < 3; i++)
+		delta_color[i] = fw->get_delta_color(i);
+
+	hide();
+}
 void FuelEditWindow::save_settings()
 {
 	QColor buffer[AMOUNT_ROW];

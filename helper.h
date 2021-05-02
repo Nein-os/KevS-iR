@@ -21,8 +21,9 @@
 #define HELPER_H
 
 #define AMOUNT_ROW 5
+#define AIW_AMOUNT_ROW 4
 
-#define VERSION_TOOL "v0.2.4"
+#define VERSION_TOOL "v0.3.0"
 #define VERSION_FUELCALC "v1.2.6"
 #define VERSION_RELATIVE "N/A"
 
@@ -50,6 +51,17 @@ typedef struct _FuelWindowSettingsStruct {
 	QFont top_header_font;
 	QFont row_font[AMOUNT_ROW];
 } FWSettings;
+typedef struct _AdditionalInformationSettingsStruct {
+	bool bActivateInformation;
+	int pos_x = 0;
+	int pos_y = 0;
+	int width = 800;
+	int height = 500;
+	bool row_visible[AIW_AMOUNT_ROW];
+	QColor background;
+	QFont row_font[AIW_AMOUNT_ROW];
+	QColor row_color[AIW_AMOUNT_ROW];
+} AIWSettings;
 
 typedef enum _KevS_Fuel_Error_List : int {
 	No_Session_ID = 1,
@@ -65,8 +77,9 @@ typedef enum _KevS_Main_Error_List : int {
 
 const std::vector<std::string> explode(const std::string& s, const char& c);
 void reset();
-bool load_settings(FWSettings *fws, const QString fileName = NULL);
-void set_default_settings(FWSettings *fws);
+bool load_settings(FWSettings *fws, AIWSettings *aiws, const QString fileName = NULL);
+void set_default_settings(FWSettings *fws, AIWSettings *aiws);
+void set_default_settings(AIWSettings *aiws);
 
 void update_fuel_target_1(double, FuelWindow*);
 void update_fuel_target_2(double, FuelWindow*);

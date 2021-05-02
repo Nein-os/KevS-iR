@@ -1,6 +1,6 @@
 release/
 .VSCodeCounter/
 irsdk/
+QtAwesome/
 *.pro.user
-*.pro
 *.user
