@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	w.set_versions(VERSION_TOOL, VERSION_FUELCALC, VERSION_RELATIVE);
+	w.set_versions(VERSION_TOOL, VERSION_FUELCALC, VERSION_RELATIVE, VERSION_AIW);
 	w.set_fuel_window_settings(fws);
 	w.set_aiw_window_settings(aiws);
 
@@ -247,7 +247,7 @@ reconnect_data:
 					aiw_data[ValueTypes::AirTemp] = ir_info::g_AirTemp.getFloat();
 					aiw_data[ValueTypes::WindDir] = ir_info::g_WindDir.getFloat();
 					aiw_data[ValueTypes::WindSpeed] = ir_info::g_WindVel.getFloat();
-					aiw_data[ValueTypes::Humidity] = ir_info::g_AirDensity.getFloat();
+					aiw_data[ValueTypes::Humidity] = ir_info::g_RelativeHumidity.getFloat() * 100;
 					aiw_data[ValueTypes::OilTemp] = ir_info::g_PlayerOilTemp.getInt();
 					aiw_data[ValueTypes::WaterTemp] = ir_info::g_PlayerWaterTemp.getInt();
 					aiw_data[ValueTypes::TrackTemp] = ir_info::g_TrackTempCrew.getFloat();
@@ -510,5 +510,6 @@ void set_default_settings(AIWSettings *aiws)
 	for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++) {
 		aiws->row_font[i] = QFont("Arial", 28);
 		aiws->row_color[i] = QColor(0,0,0);
+		aiws->row_visible[i] = true;
 	}
 }

@@ -65,7 +65,7 @@ private:
 	AdditionalInformationEditWindow *edit_aiw_widget;
 
 	// Version
-	QLabel *lbl_kevs_version, *lbl_fuelcalc_version, *lbl_relative_version;
+	QLabel *lbl_kevs_version, *lbl_fuelcalc_version, *lbl_relative_version, *lbl_aiw_version;
 
 	// Additional
 	QPushButton *btn_reset, *btn_load, *btn_save;
@@ -103,7 +103,7 @@ public:
     OptionWindow *get_ref() { return this; }
     void set_fuel_window(FuelWindow *w);
     void set_aiw_window(AdditionalInformationWindow *w);
-    void set_versions(std::string, std::string, std::string);
+    void set_versions(std::string, std::string, std::string, std::string);
     void set_fuel_window_settings(FWSettings fws);
     void set_aiw_window_settings(AIWSettings aiws);
     bool *get_fuel_state() { return &bShowFuel; }

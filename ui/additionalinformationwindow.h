@@ -22,14 +22,25 @@
 
 #include <QWidget>
 
-#include "../calculators/additionalinformationcalculator.h"
-
 #define ADDITIONAL_VALUES 2
 
 class QLabel;
 class QGridLayout;
 class QtAwesome;
 class QApplication;
+
+typedef enum _SingeValueTypes : int {
+	WindSpeed,
+	WindDir,
+	Humidity,
+	AirTemp,
+	OilTemp,
+	WaterTemp,
+	TrackTemp,
+	BatteryUsage,
+	BatteryStatus,
+	AMNT_VALUE_TYPES
+} ValueTypes;
 
 typedef enum _LineValueCategories : int {
 	Wind,

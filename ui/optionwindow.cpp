@@ -140,7 +140,8 @@ OptionWindow::OptionWindow(QWidget *parent)
 
 	version_layout->addWidget(new QLabel("KevS:"), 0, 0);
 	version_layout->addWidget(new QLabel("FuelCalc:"), 1, 0);
-	version_layout->addWidget(new QLabel("Relative:"), 2, 0);
+	version_layout->addWidget(new QLabel("Information:"), 2, 0);
+	version_layout->addWidget(new QLabel("Relative:"), 3, 0);
 
 	lbl_kevs_version = new QLabel(parent);
 	version_layout->addWidget(lbl_kevs_version, 0, 1);
@@ -148,8 +149,11 @@ OptionWindow::OptionWindow(QWidget *parent)
 	lbl_fuelcalc_version = new QLabel(parent);
 	version_layout->addWidget(lbl_fuelcalc_version, 1, 1);
 
+	lbl_aiw_version = new QLabel(parent);
+	version_layout->addWidget(lbl_aiw_version, 2, 1);
+
 	lbl_relative_version = new QLabel(parent);
-	version_layout->addWidget(lbl_relative_version, 2, 1);
+	version_layout->addWidget(lbl_relative_version, 3, 1);
 	////////////////////////////////////////
 
 	// Organisation
@@ -283,11 +287,12 @@ void OptionWindow::init_settings()
 	}
 }
 
-void OptionWindow::set_versions(std::string kevs, std::string fc, std::string rel)
+void OptionWindow::set_versions(std::string kevs, std::string fc, std::string rel, std::string aiw)
 {
 	lbl_kevs_version->setText(kevs.c_str());
 	lbl_fuelcalc_version->setText(fc.c_str());
 	lbl_relative_version->setText(rel.c_str());
+	lbl_aiw_version->setText(aiw.c_str());
 }
 
 void OptionWindow::closeEvent(QCloseEvent *event)
