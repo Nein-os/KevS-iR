@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		if (settings.good()) { // Check falls existiert
 			getline(settings, fuel_settings, '\n');
 			settings.close();
-			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0 || strcmp(fuel_settings.c_str(), "v0.2.4")) {
+			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0 || strcmp(fuel_settings.c_str(), "v0.2.4") == 0) {
 				if (!load_settings(&fws, &aiws))
 					switch(show_file_error(MainError::Error_while_parsing, &w)) {
 						case QMessageBox::Ok:
@@ -269,7 +269,8 @@ reconnect_immediat_data:
 	if (ir->isConnected()) {
 		while (*bShowFuel || *bShowAIW) {
 			f->refresh_tank(ir_info::g_FuelLevel.getFloat());
-			aiw->setHybrid(ir_info::g_BatteryState.getFloat() * 100, ir_info::g_BatteryUsed.getFloat() * 100);
+			if (ir_info::g_BatteryUsed.isValid())
+				aiw->setHybrid(ir_info::g_BatteryState.getFloat() * 100, ir_info::g_BatteryUsed.getFloat() * 100);
 		}
 	}
 	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
