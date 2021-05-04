@@ -132,9 +132,9 @@ void FuelWindow::setNewData(float fuel[])
 	}
 
 	data[AMOUNT_DATA-5]->setText(QString(QString::number((fuel[0] < 0) ? fuel[0]*-1 : 0, 'f', 2) + " FaE"));
-	data[AMOUNT_DATA-4]->setText(QString("%1 / " + QString::number(fuel[AMOUNT_DATA-3], 'f', 2) + " Laps").arg(fuel[AMOUNT_DATA-4]));
-	data[AMOUNT_DATA-2]->setText(QString(QString::number(fuel[AMOUNT_DATA-2], 'f', 2) + " remain"));
-	data[AMOUNT_DATA-1]->setText(QString(QString::number(fuel[AMOUNT_DATA-1], 'f', 2) + " l"));
+	data[AMOUNT_DATA-4]->setText(QString("%1 / " + QString::number(fuel[AMOUNT_DATA-4], 'f', 2) + " Laps").arg(fuel[AMOUNT_DATA-5]));
+	data[AMOUNT_DATA-2]->setText(QString(QString::number(fuel[AMOUNT_DATA-3], 'f', 2) + " remain"));
+	data[AMOUNT_DATA-1]->setText(QString(QString::number(fuel[AMOUNT_DATA-2], 'f', 2) + " l"));
 }
 
 void FuelWindow::paintEvent(QPaintEvent* event)
