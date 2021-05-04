@@ -27,7 +27,7 @@
 #define AMOUNT_TOP_HEADER 3
 #define AMOUNT_LEFT_HEADER 3
 #define AMOUNT_ADDITIONAL_HEADER 2
-#define AMOUNT_DATA ((AMOUNT_TOP_HEADER*AMOUNT_LEFT_HEADER) + AMOUNT_ADDITIONAL_HEADER + 2)
+#define AMOUNT_DATA ((AMOUNT_TOP_HEADER*AMOUNT_LEFT_HEADER) + AMOUNT_ADDITIONAL_HEADER + 3)
 
 class QGridLayout;
 class QLabel;
@@ -40,9 +40,9 @@ public:
 	explicit FuelWindow(QWidget *parent = nullptr);
 
 private:
-	QGridLayout *base_layout;
+	QGridLayout *base_layout, *fuel_layout;
 	QGridLayout *verbrauch_layout[4];
-	QWidget *verbrauch_widgets[4];
+	QWidget *verbrauch_widgets[4], *fuel_widget;
 	QLabel *header[AMOUNT_TOP_HEADER + AMOUNT_LEFT_HEADER + AMOUNT_ADDITIONAL_HEADER];
 	QLabel *data[AMOUNT_DATA];
 	QColor bg_color;

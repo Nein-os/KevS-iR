@@ -83,7 +83,7 @@ void FuelCalculator::calc_averages(float values[])
 	/// 3.Zeile: 6 - 8: Target 2 (mit Delta)
 	/// 4. Zeile: 9 - 10: Aktuell angefangene Runden / Zu fahrende Runden
 	/// 5. Zeile: 11 - 12: Möglichfahrende Runden vom Durchschnitt / Letzte Runde Verbrauch
-	values[0] = (refuel > 0) ? refuel : 0;
+	values[0] = refuel;
 	values[1] = (extra > .0f) ? extra : 0;
 	values[9] = stats->get_lap_count() + 1;
 	values[10] = (buffer > 0) ? buffer + stats->get_lap_count() : 0;
