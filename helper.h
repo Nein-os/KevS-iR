@@ -24,7 +24,7 @@
 #define AIW_AMOUNT_ROW 4
 
 #define VERSION_TOOL "v0.3.0"
-#define VERSION_FUELCALC "v1.2.6"
+#define VERSION_FUELCALC "v1.2.7"
 #define VERSION_AIW "v1.0.0"
 #define VERSION_RELATIVE "N/A"
 
