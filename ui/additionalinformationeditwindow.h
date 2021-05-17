@@ -29,6 +29,7 @@ class QGridLayout;
 class QLabel;
 class QColor;
 class QSpinBox;
+class QGroupBox;
 class AdditionalInformationWindow;
 
 class AdditionalInformationEditWindow : public QWidget
@@ -39,17 +40,20 @@ public:
 	virtual ~AdditionalInformationEditWindow();
 
 private:
-	QGridLayout *base_layout;
+	QGridLayout *base_layout, *precision_layout;
+	QGroupBox *gb_precision;
 	QLabel *lbl[ValueCategories::AMNT_VALUE_CATEGORIES];
 	QPushButton *btn_fonts[ValueCategories::AMNT_VALUE_CATEGORIES];
 	QPushButton *btn_colors[ValueCategories::AMNT_VALUE_CATEGORIES], *btn_bg_color;
 	QPushButton *btn_save, *btn_cancel;
 	AdditionalInformationWindow *aiw;
 
-	QSpinBox *alpha;
+	QSpinBox *alpha, *float_numbers[2];
 	QFont row_font[ValueCategories::AMNT_VALUE_CATEGORIES];
 	QColor row_color[ValueCategories::AMNT_VALUE_CATEGORIES];
 	QColor bg_color;
+
+	int wind_precision, temp_precision;
 
 private slots:
 	// Colors
@@ -70,6 +74,7 @@ private slots:
 	void cancel();
 
 public:
+	void sync_numeric_values(int, int);
 	void sync_color_values(QColor bg_color, QColor new_colors[], AdditionalInformationWindow*);
 	void sync_font_values(QFont new_fonts[]);
 };

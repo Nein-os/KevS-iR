@@ -30,6 +30,7 @@ class QGridLayout;
 class QGroupBox;
 class FuelWindow;
 class QSpinBox;
+class QDoubleSpinBox;
 class QColor;
 class QLabel;
 
@@ -43,15 +44,18 @@ private:
 	QPushButton *btn_color[AMOUNT_DIF_COLORS];
 	QPushButton *btn_font[AMOUNT_DIF_COLORS-1];
 	QColor color_values[AMOUNT_DIF_COLORS];
-	QGroupBox *gb_delta;
-	QGridLayout *delta_layout;
+	QGroupBox *gb_delta, *gb_precision;
+	QGridLayout *delta_layout, *precision_layout;
 	QPushButton *btn_delta[3];
 	QColor delta_color[3];
 	QFont font_values[AMOUNT_DIF_COLORS-2];
 	QFont font_header;
 	FuelWindow *fw;
-	QSpinBox *alpha;
+	QSpinBox *alpha, *float_numbers[3];
+	QDoubleSpinBox *delta_precision;
 
+	int number_precision[3];
+	double delta_number_precision;
 
 private slots:
 	// Colors
@@ -81,6 +85,7 @@ private slots:
 
 public:
 	FuelEditWindow(QWidget* parent = nullptr);
+	void sync_numeric_values(int, int, int, double);
 	void sync_color_values(QColor colors[], FuelWindow*);
 	void sync_font_values(QFont[]);
 	~FuelEditWindow();

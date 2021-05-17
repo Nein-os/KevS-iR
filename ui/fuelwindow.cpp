@@ -53,6 +53,14 @@ FuelWindow::FuelWindow(QWidget *parent) : QWidget(parent)
 		verbrauch_layout[i]->setHorizontalSpacing(0);
 		verbrauch_layout[i]->setVerticalSpacing(0);
 	}
+	for (int i = 0; i < 2; i++) {
+		laps_layout[i] = new QGridLayout(parent);
+		laps_widgets[i] = new QWidget(parent);
+		laps_widgets[i]->setLayout(laps_layout[i]);
+		fuel_layout->addWidget(laps_widgets[i], 0, i+1, 1, 1, Qt::AlignCenter);
+		laps_layout[i]->setHorizontalSpacing(0);
+		laps_layout[i]->setVerticalSpacing(0);
+	}
 
 	bg_color = QColor(128,128,255,128);
 
@@ -93,9 +101,12 @@ FuelWindow::FuelWindow(QWidget *parent) : QWidget(parent)
 	verbrauch_layout[3]->addWidget(data[13], 1, 0, 1, 1, Qt::AlignTop);
 
 	base_layout->addWidget(data[10], AMOUNT_LEFT_HEADER+1, 1);
-	fuel_layout->addWidget(data[9], 0, 2);
+	laps_layout[1]->addWidget(new QLabel("FaE"), 0, 0, 1, 1, Qt::AlignBottom);
+	laps_layout[1]->addWidget(data[9], 1, 0, 1, 1, Qt::AlignTop);
 	fuel_layout->addWidget(data[11], 0, 0);
-	fuel_layout->addWidget(data[12], 0, 1);
+	laps_layout[0]->addWidget(new QLabel("remain"), 0, 0, 1, 1, Qt::AlignBottom);
+	laps_layout[0]->addWidget(data[12], 1, 0, 1, 1, Qt::AlignTop);
+
 
 	setWindowTitle("Fuel Window - KevS");
 	setLayout(base_layout);
@@ -106,35 +117,37 @@ void FuelWindow::setNewData(float fuel[])
 {
 	QPalette pal;
 
-	data[0]->setText(QString(QString::number((fuel[0] > 0) ? fuel[0] : 0, 'f', 2) + " l"));
+	data[0]->setText(QString(QString::number((fuel[0] > 0) ? fuel[0] : 0, 'f', precision[0]) + " l"));
+	data_values[0] = fuel[0];
 	for (int i = 1; i < AMOUNT_DATA-4; i++) {
-		data[i]->setText(QString(QString::number(fuel[i], 'f', 2) + " l"));
+		data[i]->setText(QString(QString::number(fuel[i], 'f', precision[0]) + " l"));
+		data_values[i] = fuel[i];
 	}
-	if (fuel[5] > 0 && fuel[5] - .05 > 0) {
+	if (fuel[5] > 0 && fuel[5] - delta_precision > 0) { // More consumed // Too much
 		pal.setColor(data[5]->foregroundRole(), delta_color[2]);
 		data[5]->setPalette(pal);
-	} else if (fuel[5] < 0 && fuel[5] + .05 < 0) {
+	} else if (fuel[5] < 0 && fuel[5] + delta_precision < 0) { // Less consumed // Saved
 		pal.setColor(data[5]->foregroundRole(), delta_color[0]);
 		data[5]->setPalette(pal);
-	} else {
+	} else { // Neutral
 		pal.setColor(data[5]->foregroundRole(), delta_color[1]);
 		data[5]->setPalette(pal);
 	}
-	if (fuel[8] > 0 && fuel[8] - .05 > 0) {
+	if (fuel[8] > 0 && fuel[8] - delta_precision > 0) { // More consumed // Too much
 		pal.setColor(data[8]->foregroundRole(), delta_color[2]);
 		data[8]->setPalette(pal);
-	} else if (fuel[8] < 0 && fuel[8] + .05 < 0) {
+	} else if (fuel[8] < 0 && fuel[8] + delta_precision < 0) { // Less consumed // Saved
 		pal.setColor(data[8]->foregroundRole(), delta_color[0]);
 		data[8]->setPalette(pal);
-	} else {
+	} else { // Neutral
 		pal.setColor(data[8]->foregroundRole(), delta_color[1]);
 		data[8]->setPalette(pal);
 	}
 
-	data[AMOUNT_DATA-5]->setText(QString(QString::number((fuel[0] < 0) ? fuel[0]*-1 : 0, 'f', 2) + " FaE"));
-	data[AMOUNT_DATA-4]->setText(QString("%1 / " + QString::number(fuel[AMOUNT_DATA-4], 'f', 2) + " Laps").arg(fuel[AMOUNT_DATA-5]));
-	data[AMOUNT_DATA-2]->setText(QString(QString::number(fuel[AMOUNT_DATA-3], 'f', 2) + " remain"));
-	data[AMOUNT_DATA-1]->setText(QString(QString::number(fuel[AMOUNT_DATA-2], 'f', 2) + " l"));
+	data[AMOUNT_DATA-5]->setText(QString(QString::number((fuel[0] < 0) ? fuel[0]*-1 : 0, 'f', precision[2])) + " l");
+	data[AMOUNT_DATA-4]->setText(QString("%1 / " + QString::number(fuel[AMOUNT_DATA-4], 'f', precision[1]) + " Laps").arg(fuel[AMOUNT_DATA-5]));
+	data[AMOUNT_DATA-2]->setText(QString(QString::number(fuel[AMOUNT_DATA-3], 'f', precision[1])+  " Laps"));
+	data[AMOUNT_DATA-1]->setText(QString(QString::number(fuel[AMOUNT_DATA-2], 'f', precision[0]) + " l"));
 }
 
 void FuelWindow::paintEvent(QPaintEvent* event)
@@ -170,6 +183,7 @@ void FuelWindow::paintEvent(QPaintEvent* event)
 		if (i < 1 || i > 2)
 			verbrauch_widgets[i]->layout()->itemAt(1)->widget()->setPalette(pal); // Delta hat eigene Farben
 	}
+
 	k = AMOUNT_TOP_HEADER+AMOUNT_LEFT_HEADER;
 	pal.setColor(header[k]->foregroundRole(), row_color[AMOUNT_LEFT_HEADER].toRgb());
 	header[k]->setPalette(pal);
@@ -180,12 +194,17 @@ void FuelWindow::paintEvent(QPaintEvent* event)
 	pal.setColor(header[++k]->foregroundRole(), row_color[AMOUNT_LEFT_HEADER+1].toRgb());
 	header[k]->setPalette(pal);
 	header[k]->setFont(row_font[AMOUNT_LEFT_HEADER+1]);
-	data[AMOUNT_DATA-5]->setPalette(pal);
-	data[AMOUNT_DATA-5]->setFont(row_font[AMOUNT_LEFT_HEADER+1]);
 	data[AMOUNT_DATA-3]->setPalette(pal);
 	data[AMOUNT_DATA-3]->setFont(row_font[AMOUNT_LEFT_HEADER+1]);
-	data[AMOUNT_DATA-2]->setPalette(pal);
-	data[AMOUNT_DATA-2]->setFont(row_font[AMOUNT_LEFT_HEADER+1]);
+	for (int i = 0; i < 2; i++) {
+		pal.setColor(laps_widgets[i]->layout()->itemAt(0)->widget()->foregroundRole(), row_color[4].toRgb());
+		QFont buffer = row_font[4];
+		buffer.setPointSize(row_font[4].pointSize() / 2 + 1);
+		laps_widgets[i]->layout()->itemAt(0)->widget()->setFont(buffer);
+		laps_widgets[i]->layout()->itemAt(0)->widget()->setPalette(pal);
+		laps_widgets[i]->layout()->itemAt(1)->widget()->setFont(row_font[4]);
+		laps_widgets[i]->layout()->itemAt(1)->widget()->setPalette(pal);
+	}
 
 	customPainter.fillRect(rect(), bg_color);
 }

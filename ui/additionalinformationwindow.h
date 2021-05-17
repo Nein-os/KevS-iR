@@ -67,6 +67,8 @@ private:
 	QColor bg_color, row_color[ValueCategories::AMNT_VALUE_CATEGORIES];
 	QFont row_font[ValueCategories::AMNT_VALUE_CATEGORIES];
 
+	float precision[2];
+
 protected:
 	virtual void paintEvent(QPaintEvent* event) override;
 
@@ -82,6 +84,10 @@ public:
 	QColor get_bg_color() { return bg_color; }
 	QFont get_row_font(int i) { return (i < ValueCategories::AMNT_VALUE_CATEGORIES && i >= 0) ? row_font[i] : QFont(); }
 	bool is_row_visible(int i) { return (i < ValueCategories::AMNT_VALUE_CATEGORIES && i >= 0) ? row_visible[i] : false; }
+	void set_wind_precision(int i) { precision[0] = i; }
+	void set_temp_precision(int i) { precision[1] = i; }
+	int get_wind_precision() { return precision[0]; }
+	int get_temp_precision() { return precision[1]; }
 };
 
 #endif // ADDITIONALINFORMATIONWINDOW_H

@@ -27,7 +27,7 @@
 #define AMOUNT_TOP_HEADER 3
 #define AMOUNT_LEFT_HEADER 3
 #define AMOUNT_ADDITIONAL_HEADER 2
-#define AMOUNT_DATA ((AMOUNT_TOP_HEADER*AMOUNT_LEFT_HEADER) + AMOUNT_ADDITIONAL_HEADER + 3)
+#define AMOUNT_DATA ((AMOUNT_TOP_HEADER*AMOUNT_LEFT_HEADER) + AMOUNT_ADDITIONAL_HEADER + 3) // 14
 
 class QGridLayout;
 class QLabel;
@@ -41,8 +41,8 @@ public:
 
 private:
 	QGridLayout *base_layout, *fuel_layout;
-	QGridLayout *verbrauch_layout[4];
-	QWidget *verbrauch_widgets[4], *fuel_widget;
+	QGridLayout *verbrauch_layout[4], *laps_layout[2];
+	QWidget *verbrauch_widgets[4], *fuel_widget, *laps_widgets[2];
 	QLabel *header[AMOUNT_TOP_HEADER + AMOUNT_LEFT_HEADER + AMOUNT_ADDITIONAL_HEADER];
 	QLabel *data[AMOUNT_DATA];
 	QColor bg_color;
@@ -52,6 +52,10 @@ private:
 	QFont header_font;
 	QFont row_font[AMOUNT_ROW];
 	bool b_target_2_visible;
+
+	int precision[3];
+	double delta_precision;
+	float data_values[AMOUNT_DATA-1];
 
 protected:
 	virtual void paintEvent(QPaintEvent* event) override;
@@ -63,6 +67,14 @@ public:
 	void target_1_changed(double);
 	void target_2_changed(double);
 	void refresh_tank(float);
+	void set_refuel_precision(int i) { precision[0] = i; }
+	void set_max_laps_precision(int i) { precision[1] = i; }
+	void set_fae_precision(int i) { precision[2] = i; }
+	void set_delta_precision(double d) { delta_precision = d; }
+	int get_refuel_precision() const { return precision[0]; }
+	int get_max_laps_precision() const { return precision[1]; }
+	int get_fae_precision() const { return precision[2]; }
+	double get_delta_precision() const { return delta_precision; }
 	//void show_error(FuelError e);
 	QColor get_top_header_color() const { return header_color; }
 	QColor get_background_color() const { return bg_color; }

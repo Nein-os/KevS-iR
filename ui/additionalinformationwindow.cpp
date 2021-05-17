@@ -74,7 +74,7 @@ AdditionalInformationWindow::AdditionalInformationWindow(QWidget *parent) : QWid
 	additional_layouts[ValueCategories::Wind]->addWidget(air, 0, 0);
 	additional_layouts[ValueCategories::Car]->addWidget(oil, 0, 0, Qt::AlignRight);
 	additional_layouts[ValueCategories::Car]->addWidget(water, 0, 2, Qt::AlignRight);
-	additional_layouts[ValueCategories::Temp]->addWidget(thermometer, 0, 0);
+	additional_layouts[ValueCategories::Temp]->addWidget(thermometer, 0, 0, Qt::AlignRight);
 	additional_layouts[ValueCategories::Temp]->addWidget(track, 0, 2, Qt::AlignRight);
 	additional_layouts[ValueCategories::Battery]->addWidget(battery, 0, 0, Qt::AlignRight);
 	additional_layouts[ValueCategories::Battery]->addWidget(hys_usage, 0, 2, Qt::AlignRight);
@@ -95,8 +95,8 @@ AdditionalInformationWindow::AdditionalInformationWindow(QWidget *parent) : QWid
 }
 
 void AdditionalInformationWindow::setNewData(float data[]) {
-	values[ValueTypes::AirTemp]->setText(QString(QString::number(data[ValueTypes::AirTemp], 'f', 1) + " °C"));
-	values[ValueTypes::WindSpeed]->setText(QString(QString::number(data[ValueTypes::WindSpeed], 'f', 0) + " km/h"));
+	values[ValueTypes::AirTemp]->setText(QString(QString::number(data[ValueTypes::AirTemp], 'f', precision[1]) + " °C"));
+	values[ValueTypes::WindSpeed]->setText(QString(QString::number(data[ValueTypes::WindSpeed], 'f', precision[0]) + " km/h"));
 	values[ValueTypes::Humidity]->setText(QString(QString::number(data[ValueTypes::Humidity], 'f', 0) + "%"));
 	if (data[ValueTypes::WindDir] < 0)
 		data[ValueTypes::WindDir] += 360;
@@ -125,7 +125,7 @@ void AdditionalInformationWindow::setNewData(float data[]) {
 	values[ValueTypes::OilTemp]->setText(QString(QString::number(data[ValueTypes::OilTemp], 'f', 0) + " °C"));
 	values[ValueTypes::WaterTemp]->setText(QString(QString::number(data[ValueTypes::WaterTemp], 'f', 0) + " °C"));
 
-	values[ValueTypes::TrackTemp]->setText(QString(QString::number(data[ValueTypes::TrackTemp], 'f', 1) + " °C"));
+	values[ValueTypes::TrackTemp]->setText(QString(QString::number(data[ValueTypes::TrackTemp], 'f', precision[1]) + " °C"));
 
 
 }

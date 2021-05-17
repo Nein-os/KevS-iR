@@ -18,6 +18,7 @@
 */
 
 #include "additionalinformationeditwindow.h"
+#include "helper.h"
 
 #include <QGridLayout>
 #include <QLabel>
@@ -25,6 +26,7 @@
 #include <QColorDialog>
 #include <QFontDialog>
 #include <QSpinBox>
+#include <QGroupBox>
 
 AdditionalInformationEditWindow::AdditionalInformationEditWindow(QWidget *parent) : QWidget(parent)
 {
@@ -33,10 +35,10 @@ AdditionalInformationEditWindow::AdditionalInformationEditWindow(QWidget *parent
 	base_layout = new QGridLayout();
 
 	btn_save = new QPushButton("Save", parent);
-	base_layout->addWidget(btn_save, ValueCategories::AMNT_VALUE_CATEGORIES+1, 0);
+	base_layout->addWidget(btn_save, ValueCategories::AMNT_VALUE_CATEGORIES+2, 0);
 
 	btn_cancel = new QPushButton("Cancel", parent);
-	base_layout->addWidget(btn_cancel, ValueCategories::AMNT_VALUE_CATEGORIES+1, 2);
+	base_layout->addWidget(btn_cancel, ValueCategories::AMNT_VALUE_CATEGORIES+2, 2);
 
 	alpha = new QSpinBox(parent);
 	btn_bg_color = new QPushButton("Color", parent);
@@ -45,6 +47,11 @@ AdditionalInformationEditWindow::AdditionalInformationEditWindow(QWidget *parent
 	alpha->setMinimum(0);
 	base_layout->addWidget(btn_bg_color, 0, 1);
 	base_layout->addWidget(alpha, 0, 2);
+
+	gb_precision = new QGroupBox("Numbers precision", parent);
+	precision_layout = new QGridLayout(parent);
+	gb_precision->setLayout(precision_layout);
+	base_layout->addWidget(gb_precision, ValueCategories::AMNT_VALUE_CATEGORIES+1, 0, 1, 3);
 
 
 	lbl[ValueCategories::Battery] = new QLabel("Hybrid:", parent);
@@ -59,6 +66,17 @@ AdditionalInformationEditWindow::AdditionalInformationEditWindow(QWidget *parent
 		base_layout->addWidget(btn_colors[i], i+1, 1);
 		base_layout->addWidget(btn_fonts[i], i+1, 2);
 	}
+	float_numbers[0] = new QSpinBox(parent);
+	float_numbers[0]->setMaximum(4);
+	float_numbers[0]->setMinimum(0);
+	precision_layout->addWidget(new QLabel("Weather:", parent), 0, 0);
+	precision_layout->addWidget(float_numbers[0], 0, 1);
+	float_numbers[1] = new QSpinBox(parent);
+	float_numbers[1]->setMaximum(4);
+	float_numbers[1]->setMinimum(0);
+	precision_layout->addWidget(new QLabel("Temps:", parent), 1, 0);
+	precision_layout->addWidget(float_numbers[1],1, 1);
+
 
 	connect(btn_save, &QPushButton::released, this, &AdditionalInformationEditWindow::save_settings);
 	connect(btn_cancel, &QPushButton::released, this, &AdditionalInformationEditWindow::cancel);
@@ -73,6 +91,10 @@ AdditionalInformationEditWindow::AdditionalInformationEditWindow(QWidget *parent
 	connect(btn_fonts[ValueCategories::Car], &QPushButton::released, this, &AdditionalInformationEditWindow::edit_font_car);
 	connect(btn_fonts[ValueCategories::Temp], &QPushButton::released, this, &AdditionalInformationEditWindow::edit_font_temp);
 	connect(btn_fonts[ValueCategories::Wind], &QPushButton::released, this, &AdditionalInformationEditWindow::edit_font_weather);
+	connect(float_numbers[0], QOverload<int>::of(&QSpinBox::valueChanged),
+			[=](int i) { wind_precision = i; });
+	connect(float_numbers[1], QOverload<int>::of(&QSpinBox::valueChanged),
+			[=](int i) { temp_precision = i; });
 
 	setWindowTitle("Info-Edit Window - KevS");
 	setLayout(base_layout);
@@ -118,8 +140,11 @@ void AdditionalInformationEditWindow::edit_font_car()
 }
 void AdditionalInformationEditWindow::save_settings()
 {
+	aiw->set_temp_precision(temp_precision);
+	aiw->set_wind_precision(wind_precision);
 	aiw->setNewColors(bg_color, row_color);
 	aiw->setNewFonts(row_font);
+	update_aiw();
 	aiw->repaint();
 }
 void AdditionalInformationEditWindow::cancel()
@@ -130,10 +155,19 @@ void AdditionalInformationEditWindow::cancel()
 		row_font[i] = aiw->get_row_font(i);
 	}
 	bg_color = aiw->get_bg_color();
+	wind_precision = aiw->get_wind_precision();
+	temp_precision = aiw->get_temp_precision();
 
 	hide();
 }
 
+void AdditionalInformationEditWindow::sync_numeric_values(int wind, int temps)
+{
+	float_numbers[0]->setValue(wind);
+	float_numbers[1]->setValue(temps);
+	wind_precision = wind;
+	temp_precision = temps;
+}
 void AdditionalInformationEditWindow::sync_color_values(QColor bg_color, QColor new_colors[], AdditionalInformationWindow *aiw)
 {
 	for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++)

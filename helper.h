@@ -23,9 +23,9 @@
 #define AMOUNT_ROW 5
 #define AIW_AMOUNT_ROW 4
 
-#define VERSION_TOOL "v0.3.0"
+#define VERSION_TOOL "v0.3.1"
 #define VERSION_FUELCALC "v1.2.7"
-#define VERSION_AIW "v1.0.0"
+#define VERSION_AIW "v1.0.1"
 #define VERSION_RELATIVE "N/A"
 
 //#define IS_EXPERIMENTAL
@@ -45,6 +45,10 @@ typedef struct _FuelWindowSettingsStruct {
 	int height = 500;
 	double target_1 = 0.f;
 	double target_2 = 0.f;
+	int precision_max_laps = 2;
+	int precision_fae = 2;
+	int precision_refuel = 2;
+	double delta_precision = .05;
 	QColor background;
 	QColor top_header;
 	QColor delta[3];
@@ -58,6 +62,8 @@ typedef struct _AdditionalInformationSettingsStruct {
 	int pos_y = 0;
 	int width = 800;
 	int height = 500;
+	int precision_temps = 1;
+	int precision_wind = 0;
 	bool row_visible[AIW_AMOUNT_ROW];
 	QColor background;
 	QFont row_font[AIW_AMOUNT_ROW];
@@ -87,5 +93,8 @@ void update_fuel_target_2(double, FuelWindow*);
 //void show_error(FuelError e);
 void show_error(MainError e, QWidget*);
 int show_file_error(MainError e, QWidget*);
+
+void update_decimals_fw();
+void update_aiw();
 
 #endif // HELPER_H

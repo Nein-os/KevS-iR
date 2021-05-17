@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		if (settings.good()) { // Check falls existiert
 			getline(settings, fuel_settings, '\n');
 			settings.close();
-			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0 || strcmp(fuel_settings.c_str(), "v0.2.4") == 0) {
+			if (strcmp(fuel_settings.c_str(), VERSION_TOOL) == 0 || strcmp(fuel_settings.c_str(), "v0.3.0") == 0 || strcmp(fuel_settings.c_str(), "v0.2.4") == 0) {
 				if (!load_settings(&fws, &aiws))
 					switch(show_file_error(MainError::Error_while_parsing, &w)) {
 						case QMessageBox::Ok:
@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
     std::thread t_lapTiming(get_lap_timing, &w);
 
     w.show();
+    update_aiw();
 
     return a.exec();
 }
@@ -152,7 +153,6 @@ void gather_new_data(bool *bShowFuel, bool *bShowAIW) {
 	irsdk_client* ir;
 	char answer[10];
 	float laptime, fuel;
-	float aiw_data[ValueTypes::AMNT_VALUE_TYPES - 2];
 	ir = &irsdk_client::instance();
 	// reset kann auch als Initialisierung benutzt werden
 	reset();
@@ -244,14 +244,7 @@ reconnect_data:
 				dw->setNewData(ir_info::g_Lap.getInt(), ir_info::g_LastLapTime.getFloat(), ir_info::g_FuelLevel.getFloat(), ignore_current_lap);
 #endif
 				if (*bShowAIW) {
-					aiw_data[ValueTypes::AirTemp] = ir_info::g_AirTemp.getFloat();
-					aiw_data[ValueTypes::WindDir] = ir_info::g_WindDir.getFloat();
-					aiw_data[ValueTypes::WindSpeed] = ir_info::g_WindVel.getFloat();
-					aiw_data[ValueTypes::Humidity] = ir_info::g_RelativeHumidity.getFloat() * 100;
-					aiw_data[ValueTypes::OilTemp] = ir_info::g_PlayerOilTemp.getInt();
-					aiw_data[ValueTypes::WaterTemp] = ir_info::g_PlayerWaterTemp.getInt();
-					aiw_data[ValueTypes::TrackTemp] = ir_info::g_TrackTempCrew.getFloat();
-					aiw->setNewData(aiw_data);
+					update_aiw();
 				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}
@@ -317,6 +310,22 @@ void update_fuel_target_1(double i, FuelWindow *fw) { fuel_target_1 = i; fw->tar
 // fuel_target muss nicht resettet werden // Wird vom Benutzer gesetzt
 void update_fuel_target_2(double i, FuelWindow *fw) { fuel_target_2 = i; fw->target_2_changed(i); } // Das ist absolut furchtbar und sollte definitv anders umgesetzt werden
 
+void update_decimals_fw()
+{
+	f->setNewData(stuff);
+}
+void update_aiw()
+{
+	float aiw_data[ValueTypes::AMNT_VALUE_TYPES-2];
+	aiw_data[ValueTypes::AirTemp] = ir_info::g_AirTemp.getFloat();
+	aiw_data[ValueTypes::WindDir] = ir_info::g_WindDir.getFloat();
+	aiw_data[ValueTypes::WindSpeed] = ir_info::g_WindVel.getFloat();
+	aiw_data[ValueTypes::Humidity] = ir_info::g_RelativeHumidity.getFloat() * 100;
+	aiw_data[ValueTypes::OilTemp] = ir_info::g_PlayerOilTemp.getInt();
+	aiw_data[ValueTypes::WaterTemp] = ir_info::g_PlayerWaterTemp.getInt();
+	aiw_data[ValueTypes::TrackTemp] = ir_info::g_TrackTempCrew.getFloat();
+	aiw->setNewData(aiw_data);
+}
 
 void reset()
 {
@@ -410,6 +419,17 @@ bool load_settings(FWSettings *fws, AIWSettings *aiws, const QString fileName)
 			//std::cout << stod(to_load[5]) << "=" << fuel_target << std::endl;
 			fws->background = QColor(stoi(to_load[7]),stoi(to_load[8]),stoi(to_load[9]),stoi(to_load[10]));
 			fws->top_header = QColor(stoi(to_load[11]),stoi(to_load[12]),stoi(to_load[13]));
+			if (strcmp(version_number.c_str(), "v0.3.1") == 0) {
+				fws->precision_refuel = stoi(to_load[14]);
+				fws->precision_max_laps = stoi(to_load[15]);
+				fws->precision_fae = stoi(to_load[16]);
+				fws->delta_precision = stod(to_load[17]);
+			} else {
+				fws->precision_refuel = 2;
+				fws->precision_max_laps = 2;
+				fws->precision_fae = 2;
+				fws->delta_precision = .05;
+			}
 			getline(settings,fuel_settings,'\n');
 			to_load = explode(fuel_settings, ',');
 			for (int i = 0; i < AMOUNT_ROW; i++) {
@@ -438,7 +458,7 @@ bool load_settings(FWSettings *fws, AIWSettings *aiws, const QString fileName)
 			     << to_load[AMOUNT_ROW*6+2] << "," << to_load[AMOUNT_ROW*6+3] << ","
 			     << to_load[AMOUNT_ROW*6+4] << "," << to_load[AMOUNT_ROW*6+5] << endl << endl;
 #endif
-			if (strcmp(version_number.c_str(), "v0.3.0") == 0) {
+			if (strcmp(version_number.c_str(), "v0.3.1") == 0 || strcmp(version_number.c_str(), "v0.3.0") == 0) {
 				getline(settings,fuel_settings,'\n');
 				to_load = explode(fuel_settings, ',');
 				aiws->pos_x = stoi(to_load[0]);
@@ -449,6 +469,13 @@ bool load_settings(FWSettings *fws, AIWSettings *aiws, const QString fileName)
 				aiws->background = QColor(stoi(to_load[5]), stoi(to_load[6]), stoi(to_load[7]), stoi(to_load[8]));
 				for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++)
 					aiws->row_visible[i] = stoi(to_load[i+9]);
+				if (strcmp(version_number.c_str(), "v0.3.1") == 0) {
+					aiws->precision_wind = stoi(to_load[ValueCategories::AMNT_VALUE_CATEGORIES+9]);
+					aiws->precision_temps = stoi(to_load[ValueCategories::AMNT_VALUE_CATEGORIES+10]);
+				} else {
+					aiws->precision_temps = 1;
+					aiws->precision_wind = 0;
+				}
 				getline(settings,fuel_settings,'\n');
 				to_load = explode(fuel_settings, ',');
 				for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++)
@@ -478,6 +505,10 @@ void set_default_settings(FWSettings *fws, AIWSettings *aiws)
 	fws->bActivateFuel = true;
 	fws->target_1 = fuel_target_1 = 3.0f;
 	fws->target_2 = fuel_target_2 = 2.0f;
+	fws->precision_refuel = 2;
+	fws->precision_max_laps = 2;
+	fws->precision_fae = 2;
+	fws->delta_precision = .05;
 	fws->background = QColor(0,0,0,135);
 	fws->top_header = QColor(255,255,255);
 	fws->row[0] = QColor(255,255,255);
@@ -513,4 +544,6 @@ void set_default_settings(AIWSettings *aiws)
 		aiws->row_color[i] = QColor(0,0,0);
 		aiws->row_visible[i] = true;
 	}
+	aiws->precision_temps = 1;
+	aiws->precision_wind = 0;
 }

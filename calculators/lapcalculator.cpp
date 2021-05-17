@@ -80,8 +80,7 @@ float LapCalculator::calc_average_leader()
 				if (stats->get_id_leader() == -1)
 					stats->set_car_id_leader(ir_info::g_PlayerCarIdx.getInt());
 			}
-			//last_leader_avg = ir_info::g_SessionTime.getDouble() / (stats->get_laps_leader() + ir_info::g_CarIdxLapDistPct.getFloat(stats->get_id_leader()));
-			last_leader_avg = ir_info::g_lapStartTime[stats->get_id_leader()] / stats->get_laps_leader();
+			last_leader_avg = ir_info::g_SessionTime.getDouble() / (stats->get_laps_leader() + ir_info::g_CarIdxLapDistPct.getFloat(stats->get_id_leader()));
 		}
 	}
 	return last_leader_avg;

@@ -89,12 +89,14 @@ OptionWindow::OptionWindow(QWidget *parent)
 	dsb_target_1 = new QDoubleSpinBox(parent);
 	dsb_target_1->setMaximum(22);
 	dsb_target_1->setMinimum(0);
+	dsb_target_1->setDecimals(4);
 	fuel_layout->addWidget(dsb_target_1, 1, 1);
 
 	fuel_layout->addWidget(new QLabel("Target 2:", parent), 2, 0);
 	dsb_target_2 = new QDoubleSpinBox(parent);
 	dsb_target_2->setMaximum(22);
 	dsb_target_2->setMinimum(0);
+	dsb_target_2->setDecimals(4);
 	fuel_layout->addWidget(dsb_target_2, 2, 1);
 	fuel_layout->addWidget(new QLabel("(Activ only T1 not 0)", parent), 2, 2);
 
@@ -220,6 +222,11 @@ void OptionWindow::set_fuel_window_settings(FWSettings fws)
 	update_fuel_target_1(fws.target_1, fw);
 	dsb_target_1->setValue(fws.target_1);
 
+	fw->set_max_laps_precision(fws.precision_max_laps);
+	fw->set_fae_precision(fws.precision_fae);
+	fw->set_refuel_precision(fws.precision_refuel);
+	fw->set_delta_precision(fws.delta_precision);
+
 	fw->setGeometry(fws.pos_x, fws.pos_y, fws.width, fws.height);
 	fw->setNewColors(fws.background, fws.top_header, fws.row, fws.delta);
 	fw->setNewFonts(fws.top_header_font, fws.row_font);
@@ -231,6 +238,7 @@ void OptionWindow::set_fuel_window_settings(FWSettings fws)
 		buffer[i+2] = fws.row[i];
 		fbuffer[i+1] = fws.row_font[i];
 	}
+	edit_fuel_widget->sync_numeric_values(fws.precision_refuel, fws.precision_max_laps, fws.precision_fae, fws.delta_precision);
 	edit_fuel_widget->sync_color_values(buffer, fw);
 	edit_fuel_widget->sync_font_values(fbuffer);
 	init_settings();
@@ -244,10 +252,14 @@ void OptionWindow::set_aiw_window_settings(AIWSettings aiws)
 		aiw->setNewVisibilityForData(aiws.row_visible[i], (ValueCategories)i);
 	}
 
+	aiw->set_wind_precision(aiws.precision_wind);
+	aiw->set_temp_precision(aiws.precision_temps);
+
 	aiw->setGeometry(aiws.pos_x, aiws.pos_y, aiws.width, aiws.height);
 	aiw->setNewColors(aiws.background, aiws.row_color);
 	aiw->setNewFonts(aiws.row_font);
 
+	edit_aiw_widget->sync_numeric_values(aiws.precision_wind, aiws.precision_temps);
 	edit_aiw_widget->sync_color_values(aiws.background, aiws.row_color, aiw);
 	edit_aiw_widget->sync_font_values(aiws.row_font);
 	init_settings();
@@ -332,7 +344,8 @@ void OptionWindow::save_settings(QString file)
 		zeug << lbl_kevs_version->text().toStdString() << endl;
 		zeug << fw->x() << "," << fw->y() << "," << fw->width() << "," << fw->height() << "," << bShowFuel << "," << dsb_target_1->value() << "," << dsb_target_2->value() << ","
 		     << fw->get_background_color().red() << "," << fw->get_background_color().green() << "," << fw->get_background_color().blue() << "," << fw->get_background_color().alpha() << ","
-		     << fw->get_top_header_color().red() << "," << fw->get_top_header_color().green() << "," << fw->get_top_header_color().blue() << endl;
+		     << fw->get_top_header_color().red() << "," << fw->get_top_header_color().green() << "," << fw->get_top_header_color().blue() << ","
+		     << fw->get_refuel_precision() << "," << fw->get_max_laps_precision() << "," << fw->get_fae_precision() << "," << fw->get_delta_precision() << endl;
 		for (int i = 0; i < AMOUNT_ROW; i++) {
 			if (i)
 				zeug << ",";
@@ -344,7 +357,7 @@ void OptionWindow::save_settings(QString file)
 				zeug << ",";
 			zeug << fw->get_delta_color(i).red() << "," << fw->get_delta_color(i).green() << "," << fw->get_delta_color(i).blue();
 		}
-		zeug << std::endl;
+		zeug << endl;
 		for (int i = 0; i < AMOUNT_ROW; i++) {
 			if (i)
 				zeug << ",";
@@ -366,7 +379,8 @@ void OptionWindow::save_settings(QString file)
 		// AdditionalWindowSettings
 		zeug << aiw->x() << "," << aiw->y() << "," << aiw->width() << "," << aiw->height() << "," << bShowAIW << ","
 		     << aiw->get_bg_color().red() << "," << aiw->get_bg_color().green() << "," << aiw->get_bg_color().blue() << "," << aiw->get_bg_color().alpha() << ","
-		     << aiw->is_row_visible(ValueCategories::Wind) << "," << aiw->is_row_visible(ValueCategories::Temp) << "," << aiw->is_row_visible(ValueCategories::Car) << "," << aiw->is_row_visible(ValueCategories::Battery) << endl;
+		     << aiw->is_row_visible(ValueCategories::Wind) << "," << aiw->is_row_visible(ValueCategories::Temp) << "," << aiw->is_row_visible(ValueCategories::Car) << "," << aiw->is_row_visible(ValueCategories::Battery) << ","
+		     << aiw->get_wind_precision() << "," << aiw->get_temp_precision() << endl;
 		for (int i = 0; i < ValueCategories::AMNT_VALUE_CATEGORIES; i++) {
 			if (i)
 				zeug << ",";
